@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inventory System</title>
+</head>
+<body>
+
+<h1>Inventory System</h1>
+
+<h2>Add Product</h2>
+<input id="name" placeholder="Name">
+<input id="price" placeholder="Price">
+<input id="quantity" placeholder="Quantity">
+<button onclick="addProduct()">Add</button>
+
+<h2>Products</h2>
+<button onclick="loadProducts()">Refresh</button>
+<ul id="products"></ul>
+
+<h2>Make Sale</h2>
+<input id="saleId" placeholder="Product ID">
+<input id="saleQty" placeholder="Quantity">
+<button onclick="makeSale()">Sell</button>
+
+<p id="result"></p>
+
+<script>
+const API = "http://localhost:3000";
+
+async function addProduct() {
+  await fetch(API + "/products", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: document.getElementById("name").value,
+      price: Number(document.getElementById("price").value),
+      quantity: Number(document.getElementById("quantity").value)
+    })
+  });
+  loadProducts();
+}
+
+async function loadProducts() {
+  const res = await fetch(API + "/products");
+  const data = await res.json();
+
+  const list = document.getElementById("products");
+  list.innerHTML = "";
+
+  data.forEach(p => {
+    const li = document.createElement("li");
+    li.innerText = `${p.id}: ${p.name} - ${p.quantity}`;
+    list.appendChild(li);
+  });
+}
+
+async function makeSale() {
+  const res = await fetch(API + "/sale", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      productId: Number(document.getElementById("saleId").value),
+      quantity: Number(document.getElementById("saleQty").value)
+    })
+  });
+
+  const data = await res.json();
+
+  document.getElementById("result").innerText =
+    data.lowStock ? "Low stock warning!" : "Sale complete";
+
+  loadProducts();
+}
+</script>
+
+</body>
+</html>
